@@ -1,5 +1,6 @@
 package com.example.simple;
 
+import com.example.simple.model.Account;
 import com.example.simple.util.BitSetUtil;
 import com.example.simple.util.CollectionFunctions;
 import com.example.simple.util.PropertiesUtil;
@@ -12,9 +13,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InterruptedIOException;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 @SpringBootTest
 class SimpleApplicationTests {
@@ -59,5 +62,24 @@ class SimpleApplicationTests {
         System.out.println(b1);
         // Sets all of the bits in this BitSet to false.
         bitSet.clear();
+    }
+
+    @Test
+    void synchronizedTest(){
+        Account account = new Account(30,100);
+        for (int i = 0;i <30;++i){
+            Runnable r = () -> {
+                try{
+                    while(true){
+                        account.transfer(new Random().nextInt(30),new Random().nextInt(30),100 * new Random().nextDouble());
+                        //Thread.sleep((int) (10 * Math.random()));
+                    }
+                }catch (Exception e){
+
+                }
+            };
+            Thread t = new Thread(r);
+            t.start();
+        }
     }
 }
