@@ -1,0 +1,63 @@
+package com.example.simple;
+
+import com.example.simple.util.BitSetUtil;
+import com.example.simple.util.CollectionFunctions;
+import com.example.simple.util.PropertiesUtil;
+import org.assertj.core.util.Lists;
+import org.junit.jupiter.api.Test;
+import org.junit.platform.engine.support.descriptor.ClasspathResourceSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.List;
+
+@SpringBootTest
+class SimpleApplicationTests {
+
+    @Autowired
+    private CollectionFunctions collectionFunctions;
+
+    @Autowired
+    private PropertiesUtil propertiesUtil;
+
+    @Autowired
+    private BitSetUtil bitSetUtil;
+
+
+    @Test
+    void contextLoads() {
+        List<String> list = Lists.list("amy", "lili", "luola", "kiki");
+        Collections.sort(list);
+        System.out.println(list.toString());
+        int key = collectionFunctions.binarySearch(list, "xq");
+        System.out.println(key);
+    }
+
+    @Test
+    void propertiesTest(){
+        try {
+            propertiesUtil.load(new FileInputStream(new File("/Users/xiaoqiang/IdeaProjects/simple/src/main/resources/application.properties")));
+            String mykey = propertiesUtil.getProperty("mykey");
+            System.out.println(mykey);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void bitsetTest(){
+        BitSet bitSet = bitSetUtil.init(10);
+        boolean b = bitSet.get(1);
+        System.out.println(b);
+        bitSet.set(1);
+        boolean b1 = bitSet.get(1);
+        System.out.println(b1);
+        // Sets all of the bits in this BitSet to false.
+        bitSet.clear();
+    }
+}
