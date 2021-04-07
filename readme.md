@@ -23,15 +23,78 @@ Cpu和线程数的关系：
 java中多线程的创建方式：
 
 ```java
-//1、继承Thread类（java单继承，扩展性差，放弃）
+1、继承Thread类（java单继承，扩展性差，放弃）
   public MyThread extends Thread{}
-//2、实现Runnable(接口好扩展，可行)，重写run方法
+2、实现Runnable(接口好扩展，可行)，重写run方法
   public MyThread implements Runnable{}
-//3、java8后使用函数式编程，通过匿名类的方式创建（推荐）
+3、java8后使用函数式编程，通过匿名类的方式创建（推荐）
   Runnable r = () -> {//do sth};
-//创建好线程后并没有启动，需要通过Thread t = new Thread(r); t.start(); 来启动线程
+创建好线程后并没有启动，需要通过Thread t = new Thread(r); t.start(); 来启动线程
 ```
 
 多线程竞争问题：
 
+1. synchronized关键字：
 
+> 1. 对方法或者代码块进行显示加锁，底层是基于jvm的
+>
+> 2. 用法
+     >
+     >    ```java
+>    //1.方法使用synchronized修饰
+>    public synchronized void syn(){}
+>    // 使用同步锁关键字修饰的方法为同步方法，并发操作同时只有一个线程进入，synchronized是隐式释放锁的，在块区域结束后自动释放锁。
+>    
+>    //2.代码块中使用synchronized
+>    synchronized {}
+>    // 和修饰方法是一样的，并发操作的多个线程只有一个获取到对象的内部锁的线程才执行这段代码，执行完后释放锁，唤醒其他线程执行
+>    ```
+>
+> 3. 锁可以有一个或多个相关的条件对象
+     >
+     >    ```java
+>    public void transfer(double[] accounts,int from,int to,double amount){
+>      synchronized (accounts){
+>        
+>      }
+>    }
+>    ```
+>
+>
+>
+> 4. 如果需要在锁代码块内部条件控制，可以调用object的wait()，notifyAll()
+     >
+     >    ```java
+>    public synchronized void conditionSynTest(){
+>      while (conditon == false){
+>        wait();//当前线程由运行态 转变为等待态
+>      }
+>      // do sth
+>      
+>      // 唤醒
+>      notifyAll();
+>    }
+>    ```
+
+2. ReentrantLock重入锁
+
+> 可重入的定义为对象内部锁有一个计数，在锁的块区域中每次方法压栈内部锁计数都会+1，进入锁区域也会+1，弹出栈计数-1，直到结束锁块，计数=0，释放锁；事实上，synchronized和ReentrantLock都是可重入锁，只是一个基于jvm（synchronized），一个是基于他的封装，基于jdk，两者功能类似，一个隐式，一个显式释放锁
+>
+> ___
+>
+> 1. 使用
+>
+> ```java
+> public class Demo{
+>   private Lock blockLock = new ReentrantLock();
+>   public void lockTest(){
+>      try{
+>        blockLock.lock();
+>        // do sth
+>      }finally{
+>        blockLock.unLock();
+>        //记得在finally中释放锁
+>      }
+>   }
+> }
+> ```
