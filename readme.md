@@ -37,44 +37,41 @@ java中多线程的创建方式：
 1. synchronized关键字：
 
 > 1. 对方法或者代码块进行显示加锁，底层是基于jvm的
->
 > 2. 用法
-     >
-     >    ```java
->    //1.方法使用synchronized修饰
->    public synchronized void syn(){}
->    // 使用同步锁关键字修饰的方法为同步方法，并发操作同时只有一个线程进入，synchronized是隐式释放锁的，在块区域结束后自动释放锁。
->    
->    //2.代码块中使用synchronized
->    synchronized {}
->    // 和修饰方法是一样的，并发操作的多个线程只有一个获取到对象的内部锁的线程才执行这段代码，执行完后释放锁，唤醒其他线程执行
->    ```
+>
+> ```java
+> //1.方法使用synchronized修饰
+> public synchronized void syn(){}
+> // 使用同步锁关键字修饰的方法为同步方法，并发操作同时只有一个线程进入，synchronized是隐式释放锁的，在块区域结束后自动释放锁。
+> 
+> //2.代码块中使用synchronized
+> synchronized {}
+> // 和修饰方法是一样的，并发操作的多个线程只有一个获取到对象的内部锁的线程才执行这段代码，执行完后释放锁，唤醒其他线程执行
+> ```
 >
 > 3. 锁可以有一个或多个相关的条件对象
-     >
-     >    ```java
->    public void transfer(double[] accounts,int from,int to,double amount){
->      synchronized (accounts){
->        
->      }
->    }
->    ```
 >
->
+> ```java
+> public void transfer(double[] accounts,int from,int to,double amount){
+>   synchronized (accounts){
+>     
+>   }
+> }
+> ```
 >
 > 4. 如果需要在锁代码块内部条件控制，可以调用object的wait()，notifyAll()
-     >
-     >    ```java
->    public synchronized void conditionSynTest(){
->      while (conditon == false){
->        wait();//当前线程由运行态 转变为等待态
->      }
->      // do sth
->      
->      // 唤醒
->      notifyAll();
->    }
->    ```
+>
+> ```java
+> public synchronized void conditionSynTest(){
+>   while (conditon == false){
+>     wait();//当前线程由运行态 转变为等待态
+>   }
+>   // do sth
+>   
+>   // 唤醒
+>   notifyAll();
+> }
+> ```
 
 2. ReentrantLock重入锁
 
