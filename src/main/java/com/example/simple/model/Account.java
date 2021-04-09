@@ -3,6 +3,7 @@ package com.example.simple.model;
 import lombok.Builder;
 
 import java.util.Arrays;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -10,11 +11,17 @@ public class Account {
 
     private double[] account;
 
-    private Lock blockLock = new ReentrantLock();
+    private Lock blockLock = new
+            ReentrantLock();
+
+    private Condition c1;
+    private Condition c2;
 
     public Account(int size,double initialValue){
         account = new double[size];
         Arrays.fill(account,initialValue);
+        c1 = blockLock.newCondition();
+        c2 = blockLock.newCondition();
     }
 
     public double getTotal(){
@@ -31,13 +38,14 @@ public class Account {
      * @param to
      * @param amount
      */
-    public void transfer(int from,int to,double amount){
+    public void transfer(int from,int to,double amount) throws InterruptedException {
         if (account[from] < amount){
             return;
         }
         // 转账
         blockLock.lock(); //资源竞争枷锁 和synchronized差不多，synchronized基于jvm,reentrantlock基于jdk的封装，synchronized更简单基层，reentrantlock更灵活
         try{
+            c1.await();
             System.out.println("当前线程：" + Thread.currentThread());
             account[from] -= amount;
             System.out.printf("from %d to %d -> %10.2f",from,to,amount);
