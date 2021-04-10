@@ -148,7 +148,7 @@ java中多线程的创建方式：
 >
 > 缓存一致性协议保证每个缓存使用的共享变量的副本都是一致的，核心思想是当cpu写数据的时候，如果发现操作的变量是共享变量，（在其他的cpu缓存中也存在此变量的副本），会发出信号给其他的cpu通知将缓存置为无效状态，当其他的线程需要读取这个变量时，发现当前cpu的缓存是无效的，那么他就回取内存的最新值来覆盖缓存，从而保证每个线程读取到的cpu缓存中的共享变量为最新的
 >
-> <img src="212219343783699.jpg" width=100% height=300 title='数据流' alt='loadingfail'></img>
+> <img src="/Users/xiaoqiang/Pictures/212219343783699.jpg" width=100% height=300 title='数据流' alt='loadingfail'></img>
 
 Volatile为实例域的同步访问提供了一种免锁机制，如果变量被声明为volatile，那么编译器和jvm就知道这个域是可能被另一个线程并发更新的。
 
@@ -166,15 +166,15 @@ Volatile为实例域的同步访问提供了一种免锁机制，如果变量被
 
 5. 并发编程3个概念
 
-    1. 原子性
+   1. 原子性
 
    一个操作或者多个操作要么全部执行，并且执行过程不会被任何因素打断，要么就都不执行
 
-    2. 可见性
+   2. 可见性
 
    值的改变并不会从缓存中直接刷新到内存，而是会在所有运算结束后才被写入主存，而多线程的其他缓存中的共享变量是不会因为一个变量值的改变而同步的，除非当前缓存的值被置为无效状态，即被volatile修饰，才会当值改变时从内存中重新读取
 
-    3. 有序性
+   3. 有序性
 
    对于程序代码逻辑没有依赖性的几行来说，jvm并不会按照代码行数顺序执行，而是会进行指令冲编排，这是处理器为了提高程序运行效率，而对输入代码的执行顺序进行的优化，前提是不会对程序的最终结果产生变化，保持一致
 
@@ -191,5 +191,131 @@ Volatile为实例域的同步访问提供了一种免锁机制，如果变量被
 > 2、可见性，通过volatile关键字来保证可见性
 >
 > 3、有序性，可以通过volatile来保证一定的有序性（禁止重编排），也可以使用synchronized和lock来保证有序性
+
+7. 原子操作类
+
+在大大多数并发的情况下，java sdk编写者都会考虑到，有给开发者们提供原子操作类和线程安全集合来安全的操作基本数据类型和集合，java.util.concurrent.atomic包中包含了常见数据类型的原子操作包装类，如AtomicInteger,AtomicLong，AtomicBoolean，数组类的有AtomicIntegerArray，AtomicLongArray，引用类的有AtomicReference，AtomicReferenceArray等，源码中都是通过CAS+volatile来实现的，下面通过AtomicInteger的源码来分析原理：
+
+```java
+public class AtomicInteger extends Number implements java.io.Serializable {
+    private static final long serialVersionUID = 6214790243416807050L;
+
+    // setup to use Unsafe.compareAndSwapInt for updates
+    private static final Unsafe unsafe = Unsafe.getUnsafe();
+    private static final long valueOffset;
+
+    static {
+        try {
+            valueOffset = unsafe.objectFieldOffset
+                (AtomicInteger.class.getDeclaredField("value"));
+        } catch (Exception ex) { throw new Error(ex); }
+    }
+
+    private volatile int value;
+
+    /**
+     * Creates a new AtomicInteger with the given initial value.
+     *
+     * @param initialValue the initial value
+     */
+    public AtomicInteger(int initialValue) {
+        value = initialValue;
+    }
+```
+
+几个关键信息属性：
+
+1、private volatile int value;
+
+​	value是当前值，使用volatile修饰，来确保每次访问更新的时候拿到的都是value最新的值
+
+2、static final Unsafe unsafe = Unsafe.getUnsafe();
+
+​	Unsafe类，和C/C++不同，java没有直接对内核和操作系统，都是通过jvm，当然也不能直接操作一块内存区域，Unsafe就是jvm提供给我们操作管理内存的这么一个类，他的全限定名是sun.misc.Unsafe，一般开发应用者不会用到这个类，管理操作内存是比较危险的一件事情，所以在java中他被修饰为final，并且构造器私有化，只能通过反射来得到，当然类中也提供了静态方法通过类加载器来得到，原理相同，这个类中主要包含内存管理的一些api：
+
+![alt 加载失败](/Users/xiaoqiang/Pictures/11963487-607a966eba2eed13.png "Unsafe常用功能")
+
+原子操作类和线程安全集合底层都是操作unsafe，依靠unsafe的cas和volatile来完成
+
+3、private static final long valueOffset
+
+这是个比较有意思的属性，可以看到，在AtomicInteger的static代码块中随着AtomicInteger.class加载进jvm，也被初始化，
+
+```java
+static {
+        try {
+            valueOffset = unsafe.objectFieldOffset
+                (AtomicInteger.class.getDeclaredField("value"));
+        } catch (Exception ex) { throw new Error(ex); }
+    }
+```
+
+即：在类加载后就固定了，思考下这个属性的作用，通过unsafe.objectFieldOffse()方法得到value在内存中相对AtomicInteger实例的偏移量，通过valueOffset来得到value在AtomicInteger对象中的位置是这个属性的核心作用，图解：
+
+![alt loading](/Users/xiaoqiang/Pictures/6824285-2b78f25356cfd9fb.png "valueOffset图解")
+
+- valueOffset可以定位到AtomicInteger中value的位置
+- AtomicInteger中valueOffset是固定的（static final）,不因不同实例而改变，随着类文件被加载的jvm，相对于value的偏移量就确定了
+
+4、方法实例解析：
+
+`getAndAdd`方法
+
+```java
+
+    /**
+     * Atomically adds the given value to the current value.
+     *
+     * @param delta the value to add
+     * @return the previous value
+     */
+    public final int getAndAdd(int delta) {
+        return unsafe.getAndAddInt(this, valueOffset, delta);
+    }
+```
+
+Unsafe.getAndAddInt：
+
+源码中的变量名不太好理解，替换成好理解的变量名来看
+
+```java
+public final int getAndAddInt(Object atomicInstance, long valueOffset, int delta) {
+        int result;
+        do {
+            result = this.getIntVolatile(atomicInstance, valueOffset);
+        } while(!this.compareAndSwapInt(atomicInstance, valueOffset, result, result + delta));
+
+        return result;
+    }
+```
+
+unsafe.compareAndSwapInt：
+
+```java
+/**
+* unsafe中基本都是native本地方法来对内存直接操作
+* var1 需要更新的原子对象
+* valueOffset 原子对象中value相对于对象首地址的偏移量
+* except 希望field中的value值
+* 如果期望值except和filed-value的当前值相同，则设置field-value为这个值
+**/
+public final native boolean compareAndSwapInt(Object var1, long valueOffset, int except, int update);
+```
+
+这就是CAS的核心，他会以原子性的操作来完成三个操作:
+
+- 获取原子对象的value相对对象首地址的偏移量offset
+- 通过偏移量来获取value，比较value和期望值是否相同
+- 相同则更新value为update，否则不更新，循环直到工作内存中的值和主存中的同步
+
+现在思考模拟一下多线程（A,B两个线程）的情况下对AtomicInteger执行从1加到100的操作：
+
+- 线程A首先执行`getIntVolatile()` 方法，第一次执行，所以`getIntVolatile()`得到的一定是内存中最性的值，即为1
+- 线程下一步要执行CAS比较，假如这时线程A被阻塞了（`getAndAddInt()`并不是原子性），线程B开始执行
+- 线程B执行`getIntVolatile()`，工作内存和主存中的值都为1，获取工作内存的值为1
+- 线程B执行CAS，expect和value的值相同，执行update，更新值为1+1=2，volatile将工作内存的2刷新到主存2，线程B执行结束
+- 此时线程A恢复，继续执行，执行到CAS时，此时expext和value（获取到的为B线程更新后的最新值）的值不相同，不执行更新，进行下一轮循环
+- 线程A进入下一次循环，执行`getIntVolatile()`，此时获取到的期望值更新为最新的2
+- 线程A执行CAS，期望值和value值相同=2，执行更新操作2+1=3，工作内存为3刷新到主存，线程A结束。
 
 
