@@ -1,6 +1,7 @@
 package com.example.simple.concurrent;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntBinaryOperator;
 
 /**
  * @Author: DruidQiang
@@ -35,6 +36,7 @@ public class AtomicClassDemo {
         // 设置值
         atomicInteger.set(2);
         atomicInteger.getAndAdd(10);
+        atomicInteger.getAndAccumulate(10, (x,y) -> x*y);
     }
 
 }

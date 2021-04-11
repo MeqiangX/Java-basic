@@ -1,6 +1,9 @@
 package com.example.simple;
 
 import com.example.simple.model.Account;
+import com.example.simple.thread.CyclicBarrierDemo;
+import com.example.simple.thread.ThreadDemo;
+import com.example.simple.thread.ThreadPoolDemo;
 import com.example.simple.util.BitSetUtil;
 import com.example.simple.util.CollectionFunctions;
 import com.example.simple.util.PropertiesUtil;
@@ -81,5 +84,33 @@ class SimpleApplicationTests {
             Thread t = new Thread(r);
             t.start();
         }
+    }
+
+
+    @Test
+    public void runnableTest(){
+        ThreadDemo threadDemo = new ThreadDemo();
+        for (int time = 0;time < 10;++time){
+            System.out.println( "I ======"+time);
+            threadDemo.runnableTest();
+        }
+    }
+
+    @Test
+    public void callableTest(){
+        ThreadDemo threadDemo = new ThreadDemo();
+        threadDemo.futureTest();
+    }
+
+    @Test
+    public void threadPoolTest(){
+        ThreadPoolDemo threadPoolDemo = new ThreadPoolDemo();
+        threadPoolDemo.executorsThreadFunction();
+    }
+
+    @Test
+    public void cyclicBarrierTest(){
+        CyclicBarrierDemo cyclicBarrierDemo = new CyclicBarrierDemo();
+        cyclicBarrierDemo.cyclicBarrierFunction();
     }
 }
