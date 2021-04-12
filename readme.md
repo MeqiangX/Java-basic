@@ -24,12 +24,12 @@ java中多线程的创建方式：
 
 ```java
 1、继承Thread类（java单继承，扩展性差，放弃）
-  public MyThread extends Thread{}
-2、实现Runnable(接口好扩展，可行)，重写run方法
-  public MyThread implements Runnable{}
-3、java8后使用函数式编程，通过匿名类的方式创建（推荐）
-  Runnable r = () -> {//do sth};
-创建好线程后并没有启动，需要通过Thread t = new Thread(r); t.start(); 来启动线程
+public MyThread extends Thread{}
+        2、实现Runnable(接口好扩展，可行)，重写run方法
+public MyThread implements Runnable{}
+        3、java8后使用函数式编程，通过匿名类的方式创建（推荐）
+        Runnable r = () -> {//do sth};
+        创建好线程后并没有启动，需要通过Thread t = new Thread(r); t.start(); 来启动线程
 ```
 
 多线程竞争问题：
@@ -198,29 +198,29 @@ Volatile为实例域的同步访问提供了一种免锁机制，如果变量被
 
 ```java
 public class AtomicInteger extends Number implements java.io.Serializable {
-    private static final long serialVersionUID = 6214790243416807050L;
+   private static final long serialVersionUID = 6214790243416807050L;
 
-    // setup to use Unsafe.compareAndSwapInt for updates
-    private static final Unsafe unsafe = Unsafe.getUnsafe();
-    private static final long valueOffset;
+   // setup to use Unsafe.compareAndSwapInt for updates
+   private static final Unsafe unsafe = Unsafe.getUnsafe();
+   private static final long valueOffset;
 
-    static {
-        try {
-            valueOffset = unsafe.objectFieldOffset
-                (AtomicInteger.class.getDeclaredField("value"));
-        } catch (Exception ex) { throw new Error(ex); }
-    }
+   static {
+      try {
+         valueOffset = unsafe.objectFieldOffset
+                 (AtomicInteger.class.getDeclaredField("value"));
+      } catch (Exception ex) { throw new Error(ex); }
+   }
 
-    private volatile int value;
+   private volatile int value;
 
-    /**
-     * Creates a new AtomicInteger with the given initial value.
-     *
-     * @param initialValue the initial value
-     */
-    public AtomicInteger(int initialValue) {
-        value = initialValue;
-    }
+   /**
+    * Creates a new AtomicInteger with the given initial value.
+    *
+    * @param initialValue the initial value
+    */
+   public AtomicInteger(int initialValue) {
+      value = initialValue;
+   }
 ```
 
 几个关键信息属性：
@@ -244,10 +244,10 @@ public class AtomicInteger extends Number implements java.io.Serializable {
 ```java
 static {
         try {
-            valueOffset = unsafe.objectFieldOffset
-                (AtomicInteger.class.getDeclaredField("value"));
+        valueOffset = unsafe.objectFieldOffset
+        (AtomicInteger.class.getDeclaredField("value"));
         } catch (Exception ex) { throw new Error(ex); }
-    }
+        }
 ```
 
 即：在类加载后就固定了，思考下这个属性的作用，通过unsafe.objectFieldOffse()方法得到value在内存中相对AtomicInteger实例的偏移量，通过valueOffset来得到value在AtomicInteger对象中的位置是这个属性的核心作用，图解：
@@ -263,15 +263,15 @@ static {
 
 ```java
 
-    /**
-     * Atomically adds the given value to the current value.
-     *
-     * @param delta the value to add
-     * @return the previous value
-     */
-    public final int getAndAdd(int delta) {
+/**
+ * Atomically adds the given value to the current value.
+ *
+ * @param delta the value to add
+ * @return the previous value
+ */
+public final int getAndAdd(int delta) {
         return unsafe.getAndAddInt(this, valueOffset, delta);
-    }
+        }
 ```
 
 Unsafe.getAndAddInt：
@@ -282,23 +282,23 @@ Unsafe.getAndAddInt：
 public final int getAndAddInt(Object atomicInstance, long valueOffset, int delta) {
         int result;
         do {
-            result = this.getIntVolatile(atomicInstance, valueOffset);
+        result = this.getIntVolatile(atomicInstance, valueOffset);
         } while(!this.compareAndSwapInt(atomicInstance, valueOffset, result, result + delta));
 
         return result;
-    }
+        }
 ```
 
 unsafe.compareAndSwapInt：
 
 ```java
 /**
-* unsafe中基本都是native本地方法来对内存直接操作
-* var1 需要更新的原子对象
-* valueOffset 原子对象中value相对于对象首地址的偏移量
-* except 希望field中的value值
-* 如果期望值except和filed-value的当前值相同，则设置field-value为这个值
-**/
+ * unsafe中基本都是native本地方法来对内存直接操作
+ * var1 需要更新的原子对象
+ * valueOffset 原子对象中value相对于对象首地址的偏移量
+ * except 希望field中的value值
+ * 如果期望值except和filed-value的当前值相同，则设置field-value为这个值
+ **/
 public final native boolean compareAndSwapInt(Object var1, long valueOffset, int except, int update);
 ```
 
@@ -355,5 +355,6 @@ public final native boolean compareAndSwapInt(Object var1, long valueOffset, int
    | Semaphore        | 流量控制，限制最大的并发访问线程数                           | 为线程操作设置信号量，数量为最大的并发访问线程数，数量之内的线程可以获取信号-1，当信号量为0时，达到最大并发，不允许另外的线程进入直到拿到信号量的线程执行完释放信号量，这只是限制并发数量，限流，并不能保证线程安全，要达到线程安全还需配合锁来完成 |
    | SynchronousQueue | 允许一个线程把对象交给另一个线程                             | 生产者消费者，在没有显示同步的情况下，把一个对象从一个线程传递给另外一个对象（数据流的方向是确定单向的，不同与Exchanger是双向的） |
    | Exchanger        | 允许两个线程在要交换的对象准备好时交换对象                   | 当一个线程到达exchange调用点时，如果其他线程此前调用了此方法，则其他线程会被调度唤醒并与之进行对象交换，然后各自返回，如果其他线程还没达到交换点，则当前线程会被挂起，直到其他线程到达调用才会完成交换并正常返回，或者有超时中断返回 |
+   | Phaser           | 类似于cyclicbarrier，更加灵活，计数器是可以手动改变的        | （`register()`为part(phaser中计数器的叫法)+1，`arriveAndDeregister()` part-1）另外可以自定义各个周期到达后的触发事件 |
 
-   
+
