@@ -148,7 +148,7 @@ public MyThread implements Runnable{}
 >
 > 缓存一致性协议保证每个缓存使用的共享变量的副本都是一致的，核心思想是当cpu写数据的时候，如果发现操作的变量是共享变量，（在其他的cpu缓存中也存在此变量的副本），会发出信号给其他的cpu通知将缓存置为无效状态，当其他的线程需要读取这个变量时，发现当前cpu的缓存是无效的，那么他就回取内存的最新值来覆盖缓存，从而保证每个线程读取到的cpu缓存中的共享变量为最新的
 >
-> <img src="/Users/xiaoqiang/Pictures/212219343783699.jpg" width=100% height=300 title='数据流' alt='loadingfail'></img>
+> <img src="https://github.com/MeqiangX/resource/blob/main/image/212219343783699.jpg?raw=true" width=100% height=300 title='数据流' alt='loadingfail'></img>
 
 Volatile为实例域的同步访问提供了一种免锁机制，如果变量被声明为volatile，那么编译器和jvm就知道这个域是可能被另一个线程并发更新的。
 
@@ -233,7 +233,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
 
 ​	Unsafe类，和C/C++不同，java没有直接对内核和操作系统，都是通过jvm，当然也不能直接操作一块内存区域，Unsafe就是jvm提供给我们操作管理内存的这么一个类，他的全限定名是sun.misc.Unsafe，一般开发应用者不会用到这个类，管理操作内存是比较危险的一件事情，所以在java中他被修饰为final，并且构造器私有化，只能通过反射来得到，当然类中也提供了静态方法通过类加载器来得到，原理相同，这个类中主要包含内存管理的一些api：
 
-![alt 加载失败](/Users/xiaoqiang/Pictures/11963487-607a966eba2eed13.png "Unsafe常用功能")
+![alt 加载失败](https://github.com/MeqiangX/resource/blob/main/image/11963487-607a966eba2eed13.png?raw=true "Unsafe常用功能")
 
 原子操作类和线程安全集合底层都是操作unsafe，依靠unsafe的cas和volatile来完成
 
@@ -252,7 +252,7 @@ static {
 
 即：在类加载后就固定了，思考下这个属性的作用，通过unsafe.objectFieldOffse()方法得到value在内存中相对AtomicInteger实例的偏移量，通过valueOffset来得到value在AtomicInteger对象中的位置是这个属性的核心作用，图解：
 
-![alt loading](/Users/xiaoqiang/Pictures/6824285-2b78f25356cfd9fb.png "valueOffset图解")
+![alt loading](https://github.com/MeqiangX/resource/blob/main/image/6824285-2b78f25356cfd9fb.png?raw=true "valueOffset图解")
 
 - valueOffset可以定位到AtomicInteger中value的位置
 - AtomicInteger中valueOffset是固定的（static final）,不因不同实例而改变，随着类文件被加载的jvm，相对于value的偏移量就确定了
