@@ -12,7 +12,8 @@ public enum SortTypeEnum {
     BUBBLE(1,"bubble"),
     INSERT(2,"insert"),
     CHOOSE(3,"choose"),
-    MERGE(4,"merge");
+    MERGE(4,"merge"),
+    QUICK(5,"quick");
 
 
 

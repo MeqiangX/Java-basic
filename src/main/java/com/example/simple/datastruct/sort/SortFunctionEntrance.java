@@ -15,7 +15,7 @@ public class SortFunctionEntrance {
         int length = in.nextInt();
         System.out.println("请输入要生成的随机数组的数字范围：");
         int range = in.nextInt();
-        System.out.println("请输入排序方式：：1：冒泡 2：插入 3：选择 4：归并");
+        System.out.println("请输入排序方式：：1：冒泡 2：插入 3：选择 4：归并 5：快排");
         int sort = in.nextInt();
 
 
@@ -29,6 +29,9 @@ public class SortFunctionEntrance {
         if (null == sortType){
             return ;
         }
+        System.out.println("(排序前)输入要找的第k大的数字：k:");
+        int m = in.nextInt();
+        System.out.println("value:"+BetterSort.findK(array,m));
 
         long start = System.currentTimeMillis();
         if (sortType.getKey().equals(SortTypeEnum.BUBBLE.getKey())){
@@ -43,8 +46,15 @@ public class SortFunctionEntrance {
         if (sortType.getKey().equals(SortTypeEnum.MERGE.getKey())){
             BetterSort.mergeSort(array);
         }
+        if (sortType.getKey().equals(SortTypeEnum.QUICK.getKey())){
+            BetterSort.quickSort(array);
+        }
         System.out.println("耗时ms："+(System.currentTimeMillis() - start));
-        //Utils.print(array);
+        Utils.print(array);
+
+        System.out.println("输入要找的第k大的数字：k:");
+        int k = in.nextInt();
+        System.out.println("value:"+BetterSort.findK(array,k));
     }
 
 }
