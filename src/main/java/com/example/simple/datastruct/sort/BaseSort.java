@@ -1,5 +1,9 @@
 package com.example.simple.datastruct.sort;
 
+import java.util.Collections;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * @Author: DruidQiang
  * 三种基础排序方法 O(n^2) 冒泡 插入 选择
@@ -38,14 +42,14 @@ public class BaseSort {
      */
     public static void bubbleSort(int[] array){
         boolean isFinish = true;
-        for (int i = 0; i < array.length-1;++i){
+        for (int i = 0; i < array.length;++i){
             isFinish = true;
-            for (int j = i; j < array.length;++j){
-                if (array[i] > array[j]){
+            for (int j = 0; j < array.length-i-1;++j){
+                if (array[j] > array[j+1]){
                     // 优化版的冒泡排序，如果有一次没有发生任何交换，数组即是有序的，无需进行后续循环比较
-                    int num = array[i];
-                    array[i] = array[j];
-                    array[j] = num;
+                    int num = array[j];
+                    array[j] = array[j+1];
+                    array[j+1] = num;
                     isFinish = false;
                 }
             }

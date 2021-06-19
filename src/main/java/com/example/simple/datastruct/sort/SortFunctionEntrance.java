@@ -1,6 +1,5 @@
 package com.example.simple.datastruct.sort;
 
-import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -18,20 +17,20 @@ public class SortFunctionEntrance {
         System.out.println("请输入排序方式：：1：冒泡 2：插入 3：选择 4：归并 5：快排");
         int sort = in.nextInt();
 
-
         int[] array = new int[length];
         for (int i = 0;i<length;++i){
             array[i] = (int)(range * Math.random());
         }
 
         SortTypeEnum sortType = SortTypeEnum.getByKey(sort);
-
+        sortType.getClass().getClassLoader().getParent();
         if (null == sortType){
             return ;
         }
         System.out.println("(排序前)输入要找的第k大的数字：k:");
         int m = in.nextInt();
         System.out.println("value:"+BetterSort.findK(array,m));
+
 
         long start = System.currentTimeMillis();
         if (sortType.getKey().equals(SortTypeEnum.BUBBLE.getKey())){
